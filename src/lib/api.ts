@@ -1,7 +1,9 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios'
 import { AuthTokens, User, Course, BotLead, CreatorProfile, Lesson, Plan, Subscription, SubscriptionUsage, SubscriptionPayment, PaymentSettings, ManualPayment, ChangePlanResponse } from '@/types'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
+const API_BASE_URL = 'https://kursi.erp-imaster.uz/api'
+
 
 class ApiClient {
   private client: AxiosInstance
