@@ -276,7 +276,7 @@ function LessonModal({
                     <Icon as={FiVideo} boxSize={5} color="white" />
                   </Flex>
                   <Box flex={1}>
-                    <Text fontSize="14px" fontWeight="600" color="#3E3E3C" noOfLines={1}>
+                    <Text fontSize="14px" fontWeight="600" color="#3E3E3C" lineClamp={1}>
                       {video.name}
                     </Text>
                     <Text fontSize="12px" color="#6F6F6A">
@@ -417,7 +417,7 @@ function LessonModal({
                     gap={3}
                   >
                     <Icon as={FiFile} boxSize={4} color="#6F6F6A" />
-                    <Text fontSize="13px" color="#3E3E3C" flex={1} noOfLines={1}>
+                    <Text fontSize="13px" color="#3E3E3C" flex={1} lineClamp={1}>
                       {material.title}
                     </Text>
                     <Button
@@ -443,7 +443,7 @@ function LessonModal({
                   >
                     <Icon as={FiFile} boxSize={4} color="#4C8F6D" />
                     <Box flex={1}>
-                      <Text fontSize="13px" color="#3E3E3C" noOfLines={1}>
+                      <Text fontSize="13px" color="#3E3E3C" lineClamp={1}>
                         {file.name}
                       </Text>
                       <Text fontSize="11px" color="#6F6F6A">

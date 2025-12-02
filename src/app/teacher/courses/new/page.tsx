@@ -317,7 +317,7 @@ export default function CreateCoursePage() {
                     <Icon as={FiVideo} boxSize={5} color="white" />
                   </Flex>
                   <Box flex={1}>
-                    <Text fontSize="14px" fontWeight="600" color="#3E3E3C" noOfLines={1}>
+                    <Text fontSize="14px" fontWeight="600" color="#3E3E3C" lineClamp={1}>
                       {trialVideo.name}
                     </Text>
                     <Text fontSize="12px" color="#6F6F6A">

@@ -28,7 +28,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
         try {
           await api.login(phone, password);
-          const profile = await api.getProfile();
+          const profile = await api.getMe();
           set({ user: profile, isAuthenticated: true, isLoading: false });
         } catch (error) {
           set({ isLoading: false });
@@ -39,8 +39,9 @@ export const useAuthStore = create<AuthState>()(
       loginWithUsername: async (username: string, password: string) => {
         set({ isLoading: true });
         try {
-          await api.loginWithUsername(username, password);
-          const profile = await api.getProfile();
+          // login принимает любой логин (phone или username)
+          await api.login(username, password);
+          const profile = await api.getMe();
           set({ user: profile, isAuthenticated: true, isLoading: false });
         } catch (error) {
           set({ isLoading: false });
@@ -51,7 +52,13 @@ export const useAuthStore = create<AuthState>()(
       register: async (data) => {
         set({ isLoading: true });
         try {
-          await api.register(data);
+          await api.register({
+            phone: data.phone,
+            username: data.username || data.phone,
+            password: data.password,
+            password_confirm: data.password,
+            role: data.role as 'creator' | 'student',
+          });
           set({ isLoading: false });
         } catch (error) {
           set({ isLoading: false });
@@ -69,7 +76,7 @@ export const useAuthStore = create<AuthState>()(
 
         set({ isLoading: true });
         try {
-          const profile = await api.getProfile();
+          const profile = await api.getMe();
           set({ user: profile, isAuthenticated: true, isLoading: false });
         } catch {
           set({ user: null, isAuthenticated: false, isLoading: false });

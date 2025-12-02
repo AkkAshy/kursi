@@ -228,7 +228,7 @@ export default function TeacherCoursesPage() {
                   color="#3E3E3C"
                   mb={2}
                   lineHeight="1.3"
-                  noOfLines={2}
+                  lineClamp={2}
                 >
                   {course.title}
                 </Heading>
@@ -239,7 +239,7 @@ export default function TeacherCoursesPage() {
                   color="#6F6F6A"
                   mb={4}
                   lineHeight="1.5"
-                  noOfLines={2}
+                  lineClamp={2}
                 >
                   {course.description || 'Описание не добавлено'}
                 </Text>

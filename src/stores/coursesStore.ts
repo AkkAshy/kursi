@@ -2,6 +2,15 @@ import { create } from 'zustand'
 import { Course, Lesson } from '@/types'
 import api from '@/lib/api'
 
+interface LessonUpdateData {
+  title?: string
+  description?: string
+  text_content?: string
+  video?: File
+  homework_required?: boolean
+  homework_description?: string
+}
+
 interface CoursesState {
   courses: Course[]
   currentCourse: Course | null
@@ -33,7 +42,7 @@ interface CoursesState {
     homework_required?: boolean
     homework_description?: string
   }) => Promise<Lesson>
-  updateLesson: (id: number, data: Partial<Lesson>) => Promise<void>
+  updateLesson: (id: number, data: LessonUpdateData) => Promise<void>
   deleteLesson: (id: number) => Promise<void>
   clearError: () => void
 }
@@ -181,7 +190,7 @@ export const useCoursesStore = create<CoursesState>((set, get) => ({
     }
   },
 
-  updateLesson: async (id: number, data: Partial<Lesson>) => {
+  updateLesson: async (id: number, data: LessonUpdateData) => {
     try {
       const updatedLesson = await api.updateLesson(id, data)
       set((state) => ({
