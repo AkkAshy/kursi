@@ -410,13 +410,21 @@ class ApiClient {
   // ==================== SUBSCRIPTIONS ====================
 
   async getPlans(): Promise<Plan[]> {
-    const response = await this.client.get<Plan[]>('/plans/')
-    return response.data
+    const response = await this.client.get<{ results: Plan[] } | Plan[]>('/plans/')
+    // Handle both paginated and non-paginated responses
+    if (Array.isArray(response.data)) {
+      return response.data
+    }
+    return response.data.results || []
   }
 
   async comparePlans(): Promise<Plan[]> {
-    const response = await this.client.get<Plan[]>('/plans/compare/')
-    return response.data
+    const response = await this.client.get<{ results: Plan[] } | Plan[]>('/plans/compare/')
+    // Handle both paginated and non-paginated responses
+    if (Array.isArray(response.data)) {
+      return response.data
+    }
+    return response.data.results || []
   }
 
   async getCurrentSubscription(): Promise<Subscription> {
