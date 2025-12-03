@@ -284,6 +284,25 @@ class ApiClient {
     return response.data
   }
 
+  async getStudentCourses(): Promise<Array<{
+    id: number
+    title: string
+    description?: string
+    cover_url?: string
+    lessons_count: number
+    creator: {
+      id: number
+      username: string
+      full_name?: string
+    }
+    progress_percentage: number
+    completed_lessons: number
+    granted_at: string
+  }>> {
+    const response = await this.client.get('/courses/student_courses/')
+    return response.data
+  }
+
   // ==================== LESSONS ====================
 
   async getLessons(courseId: number): Promise<Lesson[]> {
