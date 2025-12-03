@@ -39,17 +39,28 @@ interface Purchase {
 export default function StudentPurchasesPage() {
   const [purchases, setPurchases] = useState<Purchase[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [authChecked, setAuthChecked] = useState(false)
+
+  // Проверяем авторизацию с задержкой
+  useEffect(() => {
+    const checkAuth = () => {
+      if (!api.isAuthenticated()) {
+        window.location.href = '/login?redirect=/student/purchases'
+        return
+      }
+      setAuthChecked(true)
+    }
+
+    const timer = setTimeout(checkAuth, 100)
+    return () => clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
     const fetchPurchases = async () => {
+      if (!authChecked) return
+
       try {
         setIsLoading(true)
-
-        if (!api.isAuthenticated()) {
-          window.location.href = '/login?redirect=/student/purchases'
-          return
-        }
-
         const data = await api.getMyPurchases()
         setPurchases(data)
       } catch (err) {
@@ -59,8 +70,10 @@ export default function StudentPurchasesPage() {
       }
     }
 
-    fetchPurchases()
-  }, [])
+    if (authChecked) {
+      fetchPurchases()
+    }
+  }, [authChecked])
 
   const formatPrice = (price: string) => {
     return new Intl.NumberFormat('uz-UZ').format(parseFloat(price)) + ' сум'

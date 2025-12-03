@@ -47,17 +47,29 @@ export default function StudentDashboard() {
   const [user, setUser] = useState<User | null>(null)
   const [courses, setCourses] = useState<StudentCourse[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [authChecked, setAuthChecked] = useState(false)
+
+  // Проверяем авторизацию с задержкой
+  useEffect(() => {
+    const checkAuth = () => {
+      if (!api.isAuthenticated()) {
+        window.location.href = '/login?redirect=/student'
+        return
+      }
+      setAuthChecked(true)
+    }
+
+    // Даём время на загрузку токена из localStorage
+    const timer = setTimeout(checkAuth, 100)
+    return () => clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!authChecked) return
+
       try {
         setIsLoading(true)
-
-        // Проверяем авторизацию
-        if (!api.isAuthenticated()) {
-          window.location.href = '/login?redirect=/student'
-          return
-        }
 
         const [userData, coursesData] = await Promise.all([
           api.getMe(),
@@ -74,14 +86,19 @@ export default function StudentDashboard() {
         setCourses(coursesData)
       } catch (err) {
         console.error('Error fetching data:', err)
-        window.location.href = '/login?redirect=/student'
+        // Если ошибка 401 - редирект на логин
+        if (err instanceof Error && err.message.includes('401')) {
+          window.location.href = '/login?redirect=/student'
+        }
       } finally {
         setIsLoading(false)
       }
     }
 
-    fetchData()
-  }, [])
+    if (authChecked) {
+      fetchData()
+    }
+  }, [authChecked])
 
   const handleLogout = () => {
     api.logout()
