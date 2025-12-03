@@ -20,6 +20,7 @@ import {
 import NextLink from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuthStore } from '@/stores/authStore'
+import { NotificationBell } from '@/components/admin/NotificationBell'
 
 interface NavItem {
   label: string
@@ -91,20 +92,23 @@ export function AdminSidebar() {
 
       {/* User Info */}
       <Box px={6} mb={8}>
-        <HStack gap={3}>
-          <Avatar.Root size="md">
-            <Avatar.Fallback bg="#C98A4A" color="white">
-              {user ? getInitials(user.username) : '??'}
-            </Avatar.Fallback>
-          </Avatar.Root>
-          <Box>
-            <Text fontWeight="600" color="#3E3E3C" fontSize="sm">
-              {user?.full_name || user?.username || 'Загрузка...'}
-            </Text>
-            <Text fontSize="xs" color="#6F6F6A">
-              Администратор
-            </Text>
-          </Box>
+        <HStack gap={3} justify="space-between">
+          <HStack gap={3}>
+            <Avatar.Root size="md">
+              <Avatar.Fallback bg="#C98A4A" color="white">
+                {user ? getInitials(user.username) : '??'}
+              </Avatar.Fallback>
+            </Avatar.Root>
+            <Box>
+              <Text fontWeight="600" color="#3E3E3C" fontSize="sm">
+                {user?.full_name || user?.username || 'Загрузка...'}
+              </Text>
+              <Text fontSize="xs" color="#6F6F6A">
+                {user?.role === 'manager' ? 'Менеджер' : 'Администратор'}
+              </Text>
+            </Box>
+          </HStack>
+          <NotificationBell />
         </HStack>
       </Box>
 

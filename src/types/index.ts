@@ -5,7 +5,7 @@ export interface User {
   full_name?: string;
   phone: string;
   email?: string;
-  role: 'creator' | 'student' | 'admin';
+  role: 'creator' | 'student' | 'manager' | 'admin';
   avatar_url?: string;
   is_active: boolean;
   created_at: string;
@@ -345,5 +345,18 @@ export interface StudentPurchase {
   proof_status?: 'pending' | 'approved' | 'rejected';
   rejection_reason?: string;
   admin_comment?: string;
+  created_at: string;
+}
+
+// Admin Notification types
+export interface AdminNotification {
+  id: number;
+  type: 'payment_overdue' | 'new_payment' | 'subscription_expiring';
+  type_display: string;
+  tenant_name: string;
+  tenant_id: number;
+  payment_id?: number;
+  message: string;
+  is_read: boolean;
   created_at: string;
 }

@@ -14,11 +14,13 @@ export default function AdminLayout({
   const { user, isLoading } = useAuthStore()
   const router = useRouter()
 
+  const isAdminOrManager = user?.role === 'admin' || user?.role === 'manager'
+
   useEffect(() => {
-    if (!isLoading && (!user || user.role !== 'admin')) {
+    if (!isLoading && (!user || !isAdminOrManager)) {
       router.push('/login')
     }
-  }, [user, isLoading, router])
+  }, [user, isLoading, router, isAdminOrManager])
 
   if (isLoading) {
     return (
@@ -28,7 +30,7 @@ export default function AdminLayout({
     )
   }
 
-  if (!user || user.role !== 'admin') {
+  if (!user || !isAdminOrManager) {
     return null
   }
 

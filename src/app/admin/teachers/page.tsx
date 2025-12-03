@@ -20,6 +20,9 @@ import {
   FiSearch,
   FiExternalLink,
   FiEdit,
+  FiPause,
+  FiPlay,
+  FiPhone,
 } from 'react-icons/fi'
 import api from '@/lib/api'
 import { Plan } from '@/types'
@@ -80,6 +83,25 @@ export default function TeachersPage() {
     }
   }
 
+  const handleSuspend = async (tenantId: number) => {
+    if (!confirm('Вы уверены, что хотите приостановить подписку?')) return
+    try {
+      await api.adminSuspendTeacher(tenantId)
+      await loadData()
+    } catch (error) {
+      console.error('Failed to suspend:', error)
+    }
+  }
+
+  const handleActivate = async (tenantId: number) => {
+    try {
+      await api.adminActivateTeacher(tenantId)
+      await loadData()
+    } catch (error) {
+      console.error('Failed to activate:', error)
+    }
+  }
+
   const filteredTeachers = teachers.filter((teacher) => {
     const query = searchQuery.toLowerCase()
     return (
@@ -109,6 +131,8 @@ export default function TeachersPage() {
     switch (status) {
       case 'active':
         return 'green'
+      case 'suspended':
+        return 'orange'
       case 'expired':
         return 'red'
       case 'cancelled':
@@ -117,6 +141,23 @@ export default function TeachersPage() {
         return 'yellow'
       default:
         return 'gray'
+    }
+  }
+
+  const getStatusLabel = (status?: string) => {
+    switch (status) {
+      case 'active':
+        return 'Активна'
+      case 'suspended':
+        return 'Приостановлена'
+      case 'expired':
+        return 'Истекла'
+      case 'cancelled':
+        return 'Отменена'
+      case 'pending':
+        return 'Ожидает'
+      default:
+        return 'Нет'
     }
   }
 
@@ -240,10 +281,7 @@ export default function TeachersPage() {
                 </Table.Cell>
                 <Table.Cell px={4} py={3}>
                   <Badge colorPalette={getStatusColor(teacher.subscription?.status)}>
-                    {teacher.subscription?.status === 'active' ? 'Активна' :
-                     teacher.subscription?.status === 'expired' ? 'Истекла' :
-                     teacher.subscription?.status === 'cancelled' ? 'Отменена' :
-                     teacher.subscription?.status === 'pending' ? 'Ожидает' : 'Нет'}
+                    {getStatusLabel(teacher.subscription?.status)}
                   </Badge>
                 </Table.Cell>
                 <Table.Cell px={4} py={3}>
@@ -290,6 +328,40 @@ export default function TeachersPage() {
                         pointerEvents="none"
                       />
                     </Box>
+                    {teacher.subscription && (
+                      <>
+                        {teacher.subscription.status === 'active' ? (
+                          <Button
+                            size="xs"
+                            variant="ghost"
+                            colorPalette="orange"
+                            onClick={() => handleSuspend(teacher.id)}
+                            title="Приостановить"
+                          >
+                            <Icon as={FiPause} />
+                          </Button>
+                        ) : (
+                          <Button
+                            size="xs"
+                            variant="ghost"
+                            colorPalette="green"
+                            onClick={() => handleActivate(teacher.id)}
+                            title="Активировать на 31 день"
+                          >
+                            <Icon as={FiPlay} />
+                          </Button>
+                        )}
+                      </>
+                    )}
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      colorPalette="blue"
+                      onClick={() => window.open(`tel:${teacher.owner.phone}`, '_self')}
+                      title={`Позвонить: ${teacher.owner.phone}`}
+                    >
+                      <Icon as={FiPhone} />
+                    </Button>
                   </HStack>
                 </Table.Cell>
               </Table.Row>

@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios'
-import { AuthTokens, User, Course, BotLead, CreatorProfile, Lesson, Plan, Subscription, SubscriptionUsage, SubscriptionPayment, PaymentSettings, ManualPayment, ChangePlanResponse } from '@/types'
+import { AuthTokens, User, Course, BotLead, CreatorProfile, Lesson, Plan, Subscription, SubscriptionUsage, SubscriptionPayment, PaymentSettings, ManualPayment, ChangePlanResponse, AdminNotification } from '@/types'
 
 // const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
 const API_BASE_URL = 'https://kursi.erp-imaster.uz/api'
@@ -705,6 +705,43 @@ class ApiClient {
     instructions?: string
   }): Promise<{ message: string }> {
     const response = await this.client.post('/admin/payments/update_settings/', data)
+    return response.data
+  }
+
+  // Admin Notifications
+  async getAdminNotifications(): Promise<AdminNotification[]> {
+    const response = await this.client.get('/admin/notifications/')
+    return response.data
+  }
+
+  async getAdminNotificationsUnreadCount(): Promise<{ count: number }> {
+    const response = await this.client.get('/admin/notifications/unread-count/')
+    return response.data
+  }
+
+  async markNotificationRead(id: number): Promise<{ message: string }> {
+    const response = await this.client.post(`/admin/notifications/${id}/read/`)
+    return response.data
+  }
+
+  async markAllNotificationsRead(): Promise<{ message: string }> {
+    const response = await this.client.post('/admin/notifications/read-all/')
+    return response.data
+  }
+
+  async checkOverduePayments(): Promise<{ message: string; created_count: number }> {
+    const response = await this.client.post('/admin/notifications/check-overdue/')
+    return response.data
+  }
+
+  // Admin Teacher Actions
+  async adminSuspendTeacher(tenantId: number): Promise<{ message: string }> {
+    const response = await this.client.post(`/admin/teachers/${tenantId}/suspend/`)
+    return response.data
+  }
+
+  async adminActivateTeacher(tenantId: number): Promise<{ message: string; expires_at: string }> {
+    const response = await this.client.post(`/admin/teachers/${tenantId}/activate/`)
     return response.data
   }
 }
