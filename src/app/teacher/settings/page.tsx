@@ -13,7 +13,6 @@ import {
   Card,
   Badge,
   Spinner,
-  Progress,
   Textarea,
   Image,
 } from '@chakra-ui/react'
@@ -69,9 +68,6 @@ function PlanCard({
   const color = planColors[plan.plan_type] || '#4C8F6D'
 
   const features = [
-    { label: `${plan.max_courses === 0 ? 'Безлимит' : plan.max_courses} курсов`, enabled: true },
-    { label: `${plan.max_students === 0 ? 'Безлимит' : plan.max_students} студентов`, enabled: true },
-    { label: `${plan.storage_gb} GB хранилища`, enabled: true },
     { label: 'Свой логотип', enabled: plan.can_custom_logo },
     { label: 'Цветовая схема', enabled: plan.can_custom_colors },
     { label: 'Кастомные шрифты', enabled: plan.can_custom_fonts },
@@ -178,92 +174,6 @@ function PlanCard({
               'Перейти'
             )}
           </Button>
-        </VStack>
-      </Card.Body>
-    </Card.Root>
-  )
-}
-
-function UsageCard() {
-  const { usage } = useSubscriptionStore()
-
-  if (!usage) return null
-
-  const { courses, students, storage } = usage.usage
-
-  return (
-    <Card.Root
-      bg="white"
-      borderRadius="16px"
-      boxShadow="0 2px 8px -2px rgba(0,0,0,0.06)"
-      border="1px solid"
-      borderColor="#EFE8E0"
-      mb={8}
-    >
-      <Card.Header p={6} pb={4}>
-        <Heading size="sm" color="#3E3E3C">
-          Использование ресурсов
-        </Heading>
-      </Card.Header>
-      <Card.Body p={6} pt={0}>
-        <VStack gap={5} align="stretch">
-          {/* Courses */}
-          <Box>
-            <Flex justify="space-between" mb={2}>
-              <Text fontSize="14px" color="#6F6F6A">Курсы</Text>
-              <Text fontSize="14px" fontWeight="600" color="#3E3E3C">
-                {courses.used} / {courses.unlimited ? '∞' : courses.limit}
-              </Text>
-            </Flex>
-            {!courses.unlimited && (
-              <Progress.Root
-                value={courses.limit > 0 ? (courses.used / courses.limit) * 100 : 0}
-                size="sm"
-              >
-                <Progress.Track bg="#EFE8E0" borderRadius="full">
-                  <Progress.Range bg="#4C8F6D" borderRadius="full" />
-                </Progress.Track>
-              </Progress.Root>
-            )}
-          </Box>
-
-          {/* Students */}
-          <Box>
-            <Flex justify="space-between" mb={2}>
-              <Text fontSize="14px" color="#6F6F6A">Студенты</Text>
-              <Text fontSize="14px" fontWeight="600" color="#3E3E3C">
-                {students.used} / {students.unlimited ? '∞' : students.limit}
-              </Text>
-            </Flex>
-            {!students.unlimited && (
-              <Progress.Root
-                value={students.limit > 0 ? (students.used / students.limit) * 100 : 0}
-                size="sm"
-              >
-                <Progress.Track bg="#EFE8E0" borderRadius="full">
-                  <Progress.Range bg="#4C8F6D" borderRadius="full" />
-                </Progress.Track>
-              </Progress.Root>
-            )}
-          </Box>
-
-          {/* Storage */}
-          <Box>
-            <Flex justify="space-between" mb={2}>
-              <Text fontSize="14px" color="#6F6F6A">Хранилище</Text>
-              <Text fontSize="14px" fontWeight="600" color="#3E3E3C">
-                {storage.used_gb.toFixed(1)} GB / {storage.limit_gb} GB
-              </Text>
-            </Flex>
-            <Progress.Root
-              value={storage.limit_gb > 0 ? (storage.used_gb / storage.limit_gb) * 100 : 0}
-              size="sm"
-            >
-              <Progress.Track bg="#EFE8E0" borderRadius="full">
-                <Progress.Range bg="#4C8F6D" borderRadius="full" />
-              </Progress.Track>
-            </Progress.Root>
-          </Box>
         </VStack>
       </Card.Body>
     </Card.Root>
@@ -611,12 +521,10 @@ export default function SettingsPage() {
   const {
     plans,
     currentSubscription,
-    usage,
     pendingPlanChange,
     isLoading,
     error,
     fetchPlans,
-    fetchUsage,
     changePlan,
     submitPaymentScreenshot,
     clearError,
@@ -634,20 +542,13 @@ export default function SettingsPage() {
   useEffect(() => {
     if (mounted) {
       fetchPlans()
-      fetchUsage()
     }
-  }, [mounted, fetchPlans, fetchUsage])
+  }, [mounted, fetchPlans])
 
   const handleSelectPlan = async (plan: Plan) => {
     setChangingPlan(plan.id)
-    const result = await changePlan(plan.id)
-
-    if (!result.needsPayment) {
-      // План изменён без оплаты
-      fetchUsage()
-    }
+    await changePlan(plan.id)
     // Если needsPayment, модальное окно откроется автоматически через pendingPlanChange
-
     setChangingPlan(null)
   }
 
@@ -767,9 +668,6 @@ export default function SettingsPage() {
           </Card.Body>
         </Card.Root>
       )}
-
-      {/* Usage */}
-      {usage && <UsageCard />}
 
       {/* Plans */}
       <Box mb={8}>
