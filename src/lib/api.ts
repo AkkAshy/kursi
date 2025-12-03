@@ -264,6 +264,26 @@ class ApiClient {
     return Array.isArray(response.data) ? response.data : response.data.results
   }
 
+  async getPublicCourse(id: number): Promise<{
+    id: number
+    title: string
+    description?: string
+    price: number
+    cover_url?: string
+    preview_video_url?: string
+    lessons_count: number
+    students_count: number
+    creator: {
+      id: number
+      username: string
+      full_name?: string
+    }
+    created_at: string
+  }> {
+    const response = await this.client.get(`/courses/${id}/public_detail/`)
+    return response.data
+  }
+
   // ==================== LESSONS ====================
 
   async getLessons(courseId: number): Promise<Lesson[]> {
