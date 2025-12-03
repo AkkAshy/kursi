@@ -71,7 +71,18 @@ class ApiClient {
   private getSubdomain(): string | null {
     if (typeof window === 'undefined') return null
     const hostname = window.location.hostname
+
+    // Игнорируем localhost, vercel и другие не-продакшен домены
+    if (
+      hostname === 'localhost' ||
+      hostname.includes('vercel.app') ||
+      hostname.includes('127.0.0.1')
+    ) {
+      return null
+    }
+
     const parts = hostname.split('.')
+    // Проверяем что это поддомен kursi.uz или erp-imaster.uz
     if (parts.length > 2 && parts[0] !== 'www') {
       return parts[0]
     }
