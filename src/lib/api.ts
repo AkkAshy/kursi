@@ -279,6 +279,7 @@ class ApiClient {
       full_name?: string
     }
     created_at: string
+    tenant_subdomain?: string
   }> {
     const response = await this.client.get(`/courses/${id}/public_detail/`)
     return response.data
