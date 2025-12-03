@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Box,
   Heading,
@@ -14,13 +14,16 @@ import {
   Icon,
   Flex,
   Link as ChakraLink,
+  Spinner,
 } from '@chakra-ui/react'
 import { FiPhone, FiLock, FiArrowRight, FiAlertCircle } from 'react-icons/fi'
 import NextLink from 'next/link'
 import { useAuthStore } from '@/stores/authStore'
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectUrl = searchParams.get('redirect')
   const { login, isLoading, error, clearError } = useAuthStore()
   const [loginValue, setLoginValue] = useState('')
   const [password, setPassword] = useState('')
@@ -32,6 +35,12 @@ export default function LoginPage() {
       await login(loginValue, password)
       // Получаем обновлённого пользователя из store
       const { user } = useAuthStore.getState()
+
+      // Если есть redirect URL - идём туда
+      if (redirectUrl) {
+        router.push(redirectUrl)
+        return
+      }
 
       // Редирект в зависимости от роли
       if (user?.role === 'admin' || user?.role === 'manager') {
@@ -310,5 +319,17 @@ export default function LoginPage() {
         </VStack>
       </Box>
     </Flex>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <Flex minH="100vh" align="center" justify="center" bg="#FAF7F2">
+        <Spinner size="xl" color="#4C8F6D" />
+      </Flex>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }

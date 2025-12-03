@@ -258,7 +258,7 @@ export default function PublicCoursePage({ params }: { params: Promise<{ id: str
                         {formatPrice(course.price)}
                       </Text>
                     </Box>
-                    <NextLink href={`/login?redirect=/courses/${course.id}/buy`}>
+                    <NextLink href={api.isAuthenticated() ? `/courses/${course.id}/buy` : `/login?redirect=/courses/${course.id}/buy`}>
                       <Button
                         size="lg"
                         bg="#4C8F6D"
@@ -423,7 +423,7 @@ export default function PublicCoursePage({ params }: { params: Promise<{ id: str
                     Получите полный доступ ко всем урокам курса
                   </Text>
                 </Box>
-                <NextLink href={`/login?redirect=/courses/${course.id}/buy`}>
+                <NextLink href={api.isAuthenticated() ? `/courses/${course.id}/buy` : `/login?redirect=/courses/${course.id}/buy`}>
                   <Button
                     size="lg"
                     bg="white"

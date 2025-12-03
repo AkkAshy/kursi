@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Box,
   Heading,
@@ -22,8 +22,10 @@ import { useAuthStore } from '@/stores/authStore'
 
 type Role = 'creator' | 'student'
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectUrl = searchParams.get('redirect')
   const { register, isLoading, error, clearError } = useAuthStore()
   const [mounted, setMounted] = useState(false)
 
@@ -116,6 +118,13 @@ export default function RegisterPage() {
         password_confirm: passwordConfirm,
         role: selectedRole,
       })
+
+      // Если есть redirect URL - идём туда
+      if (redirectUrl) {
+        router.push(redirectUrl)
+        return
+      }
+
       router.push(selectedRole === 'creator' ? '/teacher' : '/student')
     } catch {
       // Error is handled in store
@@ -645,5 +654,17 @@ export default function RegisterPage() {
         </Box>
       </Flex>
     </Flex>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <Flex minH="100vh" align="center" justify="center" bg="#FAF7F2">
+        <Spinner size="xl" color="#4C8F6D" />
+      </Flex>
+    }>
+      <RegisterForm />
+    </Suspense>
   )
 }
