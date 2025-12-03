@@ -40,13 +40,11 @@ export default function BotLinkPage() {
     setIsLoading(true)
     setError(null)
     try {
-      const profiles = await api.getCreatorProfile()
-      if (profiles.length > 0) {
-        setProfile(profiles[0])
-      }
+      const profile = await api.getCreatorProfile()
+      setProfile(profile)
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { detail?: string } } }
-      setError(error.response?.data?.detail || 'Ошибка загрузки профиля')
+      const error = err as { response?: { data?: { detail?: string; error?: string } } }
+      setError(error.response?.data?.error || error.response?.data?.detail || 'Ошибка загрузки профиля')
     } finally {
       setIsLoading(false)
     }

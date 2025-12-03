@@ -360,8 +360,8 @@ class ApiClient {
 
   // ==================== CREATOR PROFILE ====================
 
-  async getCreatorProfile(): Promise<CreatorProfile[]> {
-    const response = await this.client.get<CreatorProfile[]>('/creator-profile/')
+  async getCreatorProfile(): Promise<CreatorProfile> {
+    const response = await this.client.get<CreatorProfile>('/creator-profile/me/')
     return response.data
   }
 
