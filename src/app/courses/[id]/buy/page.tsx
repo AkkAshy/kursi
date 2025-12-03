@@ -50,6 +50,7 @@ export default function BuyCoursePage({ params }: { params: Promise<{ id: string
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
 
   const [screenshot, setScreenshot] = useState<File | null>(null)
   const [studentPhone, setStudentPhone] = useState('+998')
@@ -58,16 +59,28 @@ export default function BuyCoursePage({ params }: { params: Promise<{ id: string
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Проверяем авторизацию с небольшой задержкой чтобы токен успел загрузиться
+  useEffect(() => {
+    const checkAuth = () => {
+      if (!api.isAuthenticated()) {
+        router.push(`/login?redirect=/courses/${courseId}/buy`)
+        return false
+      }
+      setAuthChecked(true)
+      return true
+    }
+
+    // Даём время на загрузку токена из localStorage
+    const timer = setTimeout(checkAuth, 100)
+    return () => clearTimeout(timer)
+  }, [courseId, router])
+
   useEffect(() => {
     const fetchPaymentInfo = async () => {
+      if (!authChecked) return
+
       try {
         setIsLoading(true)
-
-        if (!api.isAuthenticated()) {
-          router.push(`/login?redirect=/courses/${courseId}/buy`)
-          return
-        }
-
         const data = await api.getCoursePaymentInfo(courseId)
         setPaymentInfo(data)
       } catch (err: unknown) {
@@ -78,10 +91,10 @@ export default function BuyCoursePage({ params }: { params: Promise<{ id: string
       }
     }
 
-    if (!isNaN(courseId)) {
+    if (!isNaN(courseId) && authChecked) {
       fetchPaymentInfo()
     }
-  }, [courseId, router])
+  }, [courseId, authChecked])
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value
