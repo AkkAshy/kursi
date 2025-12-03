@@ -30,7 +30,17 @@ export default function LoginPage() {
     clearError()
     try {
       await login(loginValue, password)
-      router.push('/teacher')
+      // Получаем обновлённого пользователя из store
+      const { user } = useAuthStore.getState()
+
+      // Редирект в зависимости от роли
+      if (user?.role === 'admin' || user?.role === 'manager') {
+        router.push('/admin')
+      } else if (user?.role === 'student') {
+        router.push('/student')
+      } else {
+        router.push('/teacher')
+      }
     } catch {
       // Error is handled in store
     }
