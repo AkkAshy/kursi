@@ -593,6 +593,120 @@ class ApiClient {
     const response = await this.client.get('/course-payments/my-purchases/')
     return response.data
   }
+
+  // ==================== ADMIN ====================
+
+  async getAdminStats(): Promise<{
+    total_teachers: number
+    total_students: number
+    total_courses: number
+    total_revenue: number
+    pending_payments: number
+    active_subscriptions: number
+  }> {
+    const response = await this.client.get('/admin/stats/')
+    return response.data
+  }
+
+  async getAdminTeachers(): Promise<Array<{
+    id: number
+    subdomain: string
+    name: string
+    owner: {
+      id: number
+      username: string
+      phone: string
+      email?: string
+      full_name?: string
+    }
+    subscription: {
+      id: number
+      plan: Plan
+      status: string
+      expires_at?: string
+    } | null
+    courses_count: number
+    students_count: number
+    created_at: string
+  }>> {
+    const response = await this.client.get('/admin/teachers/')
+    return response.data
+  }
+
+  async adminChangePlan(tenantId: number, planId: number): Promise<{ message: string }> {
+    const response = await this.client.post(`/admin/teachers/${tenantId}/change-plan/`, {
+      plan_id: planId,
+    })
+    return response.data
+  }
+
+  async getAdminPendingPayments(): Promise<ManualPayment[]> {
+    const response = await this.client.get('/admin/payments/pending/')
+    return response.data
+  }
+
+  async getAdminAllPayments(): Promise<ManualPayment[]> {
+    const response = await this.client.get('/admin/payments/all/')
+    return response.data
+  }
+
+  async adminApprovePayment(paymentId: number, comment?: string): Promise<{ message: string }> {
+    const response = await this.client.post(`/admin/payments/${paymentId}/approve/`, { comment })
+    return response.data
+  }
+
+  async adminRejectPayment(paymentId: number, comment: string): Promise<{ message: string }> {
+    const response = await this.client.post(`/admin/payments/${paymentId}/reject/`, { comment })
+    return response.data
+  }
+
+  async getAdminSubscriptions(): Promise<Array<{
+    id: number
+    plan: Plan
+    status: string
+    started_at: string
+    expires_at?: string
+    auto_renew: boolean
+    tenant_name: string
+    tenant_subdomain: string
+    owner_name: string
+    owner_phone: string
+  }>> {
+    const response = await this.client.get('/admin/subscriptions/')
+    return response.data
+  }
+
+  async getAdminSubscriptionStats(): Promise<Array<{
+    plan_name: string
+    plan_type: string
+    count: number
+    revenue: number
+  }>> {
+    const response = await this.client.get('/admin/subscriptions/stats/')
+    return response.data
+  }
+
+  async getAdminPaymentSettings(): Promise<{
+    card_number: string
+    card_holder_name: string
+    manager_phone: string
+    manager_telegram: string
+    instructions: string
+  }> {
+    const response = await this.client.get('/admin/payments/settings/')
+    return response.data
+  }
+
+  async updateAdminPaymentSettings(data: {
+    card_number?: string
+    card_holder_name?: string
+    manager_phone?: string
+    manager_telegram?: string
+    instructions?: string
+  }): Promise<{ message: string }> {
+    const response = await this.client.post('/admin/payments/update_settings/', data)
+    return response.data
+  }
 }
 
 export const api = new ApiClient()
