@@ -471,6 +471,128 @@ class ApiClient {
     const response = await this.client.get<ManualPayment>(`/manual-payments/${id}/status/`)
     return response.data
   }
+
+  // ==================== COURSE PAYMENTS (для оплаты курсов студентами) ====================
+
+  // Для учителя: настройки оплаты
+  async getCreatorPaymentSettings(): Promise<{
+    card_number: string
+    card_holder_name: string
+    payment_phone: string
+    payment_instructions: string
+  }> {
+    const response = await this.client.get('/creator-payments/settings/')
+    return response.data
+  }
+
+  async updateCreatorPaymentSettings(data: {
+    card_number?: string
+    card_holder_name?: string
+    payment_phone?: string
+    payment_instructions?: string
+  }): Promise<{
+    message: string
+    card_number: string
+    card_holder_name: string
+    payment_phone: string
+    payment_instructions: string
+  }> {
+    const response = await this.client.put('/creator-payments/settings/', data)
+    return response.data
+  }
+
+  // Для учителя: просмотр платежей
+  async getPendingCoursePayments(): Promise<Array<{
+    id: number
+    purchase_id: number
+    student: { id: number; username: string; phone: string }
+    course: { id: number; title: string }
+    amount: string
+    screenshot: string
+    student_phone: string
+    student_comment?: string
+    created_at: string
+  }>> {
+    const response = await this.client.get('/creator-payments/pending/')
+    return response.data
+  }
+
+  async getAllCoursePayments(): Promise<Array<{
+    id: number
+    purchase_id: number
+    student: { id: number; username: string; phone: string }
+    course: { id: number; title: string }
+    amount: string
+    screenshot: string
+    student_phone: string
+    student_comment?: string
+    status: 'pending' | 'approved' | 'rejected'
+    rejection_reason?: string
+    admin_comment?: string
+    reviewed_by?: string
+    reviewed_at?: string
+    created_at: string
+  }>> {
+    const response = await this.client.get('/creator-payments/all/')
+    return response.data
+  }
+
+  async approveCoursePayment(proofId: number, comment?: string): Promise<{ message: string; status: string }> {
+    const response = await this.client.post(`/creator-payments/${proofId}/approve/`, { comment })
+    return response.data
+  }
+
+  async rejectCoursePayment(proofId: number, reason: string, comment?: string): Promise<{ message: string; status: string }> {
+    const response = await this.client.post(`/creator-payments/${proofId}/reject/`, { reason, comment })
+    return response.data
+  }
+
+  // Для студента: оплата курса
+  async getCoursePaymentInfo(courseId: number): Promise<{
+    course: { id: number; title: string; price: string }
+    payment_info: {
+      card_number: string
+      card_number_formatted: string
+      card_holder_name: string
+      payment_phone: string
+      instructions: string
+    }
+  }> {
+    const response = await this.client.get(`/course-payments/${courseId}/payment-info/`)
+    return response.data
+  }
+
+  async submitCoursePayment(courseId: number, screenshot: File, studentPhone: string, comment?: string): Promise<{
+    message: string
+    purchase_id: number
+    status: string
+  }> {
+    const formData = new FormData()
+    formData.append('screenshot', screenshot)
+    formData.append('student_phone', studentPhone)
+    if (comment) formData.append('comment', comment)
+
+    const response = await this.client.post(`/course-payments/${courseId}/submit-payment/`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
+  }
+
+  async getMyPurchases(): Promise<Array<{
+    id: number
+    course: { id: number; title: string }
+    amount: string
+    status: 'pending' | 'paid' | 'failed'
+    proof_status?: 'pending' | 'approved' | 'rejected'
+    rejection_reason?: string
+    admin_comment?: string
+    created_at: string
+  }>> {
+    const response = await this.client.get('/course-payments/my-purchases/')
+    return response.data
+  }
 }
 
 export const api = new ApiClient()

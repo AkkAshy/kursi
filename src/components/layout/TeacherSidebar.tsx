@@ -16,6 +16,7 @@ import {
   FiSettings,
   FiLogOut,
   FiLink,
+  FiCreditCard,
 } from 'react-icons/fi'
 import NextLink from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -31,6 +32,7 @@ const navItems: NavItem[] = [
   { label: 'Главная', href: '/teacher', icon: FiHome },
   { label: 'Мои курсы', href: '/teacher/courses', icon: FiBook },
   { label: 'Лиды', href: '/teacher/leads', icon: FiUsers },
+  { label: 'Платежи', href: '/teacher/payments', icon: FiCreditCard },
   { label: 'Бот-ссылка', href: '/teacher/bot-link', icon: FiLink },
   { label: 'Настройки', href: '/teacher/settings', icon: FiSettings },
 ]

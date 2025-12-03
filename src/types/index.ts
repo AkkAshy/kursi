@@ -286,3 +286,64 @@ export interface CreatorStats {
   new_leads_today: number;
   courses_with_students: Course[];
 }
+
+// Course Payment types (оплата курсов студентами через перевод)
+export interface CreatorPaymentSettings {
+  card_number: string;
+  card_holder_name: string;
+  payment_phone: string;
+  payment_instructions: string;
+}
+
+export interface CoursePaymentInfo {
+  course: {
+    id: number;
+    title: string;
+    price: string;
+  };
+  payment_info: {
+    card_number: string;
+    card_number_formatted: string;
+    card_holder_name: string;
+    payment_phone: string;
+    instructions: string;
+  };
+}
+
+export interface CoursePaymentProof {
+  id: number;
+  purchase_id: number;
+  student: {
+    id: number;
+    username: string;
+    phone: string;
+  };
+  course: {
+    id: number;
+    title: string;
+  };
+  amount: string;
+  screenshot: string;
+  student_phone: string;
+  student_comment?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  rejection_reason?: string;
+  admin_comment?: string;
+  reviewed_by?: string;
+  reviewed_at?: string;
+  created_at: string;
+}
+
+export interface StudentPurchase {
+  id: number;
+  course: {
+    id: number;
+    title: string;
+  };
+  amount: string;
+  status: 'pending' | 'paid' | 'failed';
+  proof_status?: 'pending' | 'approved' | 'rejected';
+  rejection_reason?: string;
+  admin_comment?: string;
+  created_at: string;
+}
