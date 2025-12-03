@@ -159,7 +159,7 @@ export default function BotLinkPage() {
                   </Text>
                   <HStack gap={2}>
                     <Input
-                      value={profile.bot_link || `https://t.me/kursi_bot?start=${profile.referral_key}`}
+                      value={profile.bot_link || `https://t.me/kursi_testbot?start=${profile.referral_key}`}
                       readOnly
                       bg="#FDFBF8"
                       border="1px solid"
