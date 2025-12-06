@@ -174,20 +174,27 @@ export function TelegramLinkCard() {
               <Text fontWeight="600" color="#4C8F6D" fontSize="14px" mb={3}>
                 Нажмите кнопку для привязки
               </Text>
-              <Button
-                as="a"
+              <a
                 href={`https://t.me/${botUsername}?start=link_${linkCode}`}
                 target="_blank"
-                bg="#0088cc"
-                color="white"
-                size="lg"
-                borderRadius="12px"
-                w="full"
-                _hover={{ bg: '#0077b5' }}
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#0088cc',
+                  color: 'white',
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  padding: '12px',
+                  borderRadius: '12px',
+                  width: '100%',
+                  textDecoration: 'none',
+                }}
               >
-                <Icon as={FiMessageCircle} mr={2} />
+                <Icon as={FiMessageCircle} style={{ marginRight: '8px' }} />
                 Открыть Telegram
-              </Button>
+              </a>
               <Text color="#6F6F6A" fontSize="12px" mt={3}>
                 Ссылка действительна 10 минут
               </Text>
