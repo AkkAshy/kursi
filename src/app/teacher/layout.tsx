@@ -13,9 +13,10 @@ export default function TeacherLayout({
       <TeacherSidebar />
       <Box
         as="main"
-        ml="260px"
+        ml={{ base: 0, md: '260px' }}
         flex={1}
-        p={8}
+        p={{ base: 4, md: 8 }}
+        pt={{ base: '70px', md: 8 }}
         minH="100vh"
       >
         {children}

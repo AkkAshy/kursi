@@ -1,8 +1,8 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios'
-import { AuthTokens, User, Course, BotLead, CreatorProfile, Lesson, Plan, Subscription, SubscriptionUsage, SubscriptionPayment, PaymentSettings, ManualPayment, ChangePlanResponse, AdminNotification } from '@/types'
+import { AuthTokens, User, Course, BotLead, CreatorProfile, Lesson, Plan, Subscription, SubscriptionUsage, SubscriptionPayment, PaymentSettings, ManualPayment, ChangePlanResponse, AdminNotification, HomeworkSubmission } from '@/types'
 
-// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
-const API_BASE_URL = 'https://kursi.erp-imaster.uz/api'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
+// const API_BASE_URL = 'https://kursi.erp-imaster.uz/api'
 
 
 class ApiClient {
@@ -72,12 +72,16 @@ class ApiClient {
     if (typeof window === 'undefined') return null
     const hostname = window.location.hostname
 
-    // Игнорируем localhost, vercel и другие не-продакшен домены
+    // Для localhost и разработки используем demo tenant
     if (
       hostname === 'localhost' ||
-      hostname.includes('vercel.app') ||
       hostname.includes('127.0.0.1')
     ) {
+      return 'demo'
+    }
+
+    // Игнорируем vercel и другие не-продакшен домены
+    if (hostname.includes('vercel.app')) {
       return null
     }
 
@@ -172,6 +176,70 @@ class ApiClient {
     return response.data
   }
 
+  async updateProfile(data: {
+    full_name?: string
+    email?: string
+  }): Promise<User> {
+    const response = await this.client.patch<User>('/users/me/', data)
+    return response.data
+  }
+
+  async changePassword(data: {
+    old_password: string
+    new_password: string
+  }): Promise<{ message: string }> {
+    const response = await this.client.post('/users/change_password/', data)
+    return response.data
+  }
+
+  async requestPasswordReset(phone: string): Promise<{
+    message: string
+    phone: string
+    dev_code?: string
+  }> {
+    const response = await this.client.post('/users/request_reset/', { phone })
+    return response.data
+  }
+
+  async verifyResetCode(phone: string, code: string): Promise<{
+    message: string
+    reset_token: string
+  }> {
+    const response = await this.client.post('/users/verify_reset_code/', { phone, code })
+    return response.data
+  }
+
+  async resetPassword(resetToken: string, newPassword: string): Promise<{ message: string }> {
+    const response = await this.client.post('/users/reset_password/', {
+      reset_token: resetToken,
+      new_password: newPassword,
+    })
+    return response.data
+  }
+
+  async getTelegramStatus(): Promise<{
+    linked: boolean
+    telegram_id: number | null
+  }> {
+    const response = await this.client.get('/users/telegram_status/')
+    return response.data
+  }
+
+  async generateTelegramLinkCode(): Promise<{
+    code: string
+    expires_in: number
+    bot_username: string
+    message: string
+  }> {
+    const response = await this.client.post('/users/generate_telegram_link_code/')
+    return response.data
+  }
+
+  async unlinkTelegram(): Promise<{ message: string }> {
+    const response = await this.client.post('/users/unlink_telegram/')
+    return response.data
+  }
+
   // ==================== COURSES ====================
 
   async getCourses(): Promise<Course[]> {
@@ -261,6 +329,11 @@ class ApiClient {
 
   async getPublicCourses(): Promise<Course[]> {
     const response = await this.client.get<{ results: Course[] } | Course[]>('/courses/public/')
+    return Array.isArray(response.data) ? response.data : response.data.results
+  }
+
+  async getRecommendedCourses(): Promise<Course[]> {
+    const response = await this.client.get<{ results: Course[] } | Course[]>('/courses/recommended/')
     return Array.isArray(response.data) ? response.data : response.data.results
   }
 
@@ -389,6 +462,71 @@ class ApiClient {
     await this.client.delete(`/lessons/${lessonId}/material/${materialId}/`)
   }
 
+  async completeLesson(lessonId: number): Promise<{
+    message: string
+    lesson_id: number
+    is_completed: boolean
+    course_progress: {
+      completed_lessons: number
+      total_lessons: number
+      progress_percentage: number
+    }
+  }> {
+    const response = await this.client.post(`/lessons/${lessonId}/complete/`)
+    return response.data
+  }
+
+  async getLessonProgress(lessonId: number): Promise<{
+    is_completed: boolean
+    completed_at?: string
+  }> {
+    const response = await this.client.get(`/lessons/${lessonId}/progress/`)
+    return response.data
+  }
+
+  // ==================== HOMEWORKS ====================
+
+  async getMyHomeworks(): Promise<HomeworkSubmission[]> {
+    const response = await this.client.get<HomeworkSubmission[] | { results: HomeworkSubmission[] }>('/homeworks/')
+    return Array.isArray(response.data) ? response.data : response.data.results
+  }
+
+  async getHomeworksByLesson(lessonId: number): Promise<HomeworkSubmission[]> {
+    const response = await this.client.get<HomeworkSubmission[]>(`/homeworks/by_lesson/?lesson=${lessonId}`)
+    return response.data
+  }
+
+  async submitHomework(data: {
+    lesson: number
+    text_answer?: string
+    file?: File
+  }): Promise<HomeworkSubmission> {
+    const formData = new FormData()
+    formData.append('lesson', data.lesson.toString())
+    if (data.text_answer) formData.append('text_answer', data.text_answer)
+    if (data.file) formData.append('file', data.file)
+
+    const response = await this.client.post<HomeworkSubmission>('/homeworks/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
+  }
+
+  async getPendingHomeworks(): Promise<HomeworkSubmission[]> {
+    const response = await this.client.get<HomeworkSubmission[]>('/homeworks/pending/')
+    return response.data
+  }
+
+  async checkHomework(id: number, data: {
+    status: 'passed' | 'failed'
+    feedback?: string
+  }): Promise<{ message: string; homework: HomeworkSubmission }> {
+    const response = await this.client.post(`/homeworks/${id}/check/`, data)
+    return response.data
+  }
+
   // ==================== BOT LEADS ====================
 
   async getLeads(status?: string): Promise<BotLead[]> {
@@ -443,7 +581,75 @@ class ApiClient {
     name: string
     creator: User
   }> {
-    const response = await this.client.get('/tenant/info/')
+    const response = await this.client.get('/tenants/info/')
+    return response.data
+  }
+
+  async getMyTenant(): Promise<{
+    id: number
+    subdomain: string
+    name: string
+    description?: string
+    logo_url?: string
+    primary_color: string
+    status: string
+    created_at: string
+  } | null> {
+    try {
+      const response = await this.client.get('/tenants/my_tenant/')
+      return response.data
+    } catch {
+      return null
+    }
+  }
+
+  async checkSubdomainAvailability(subdomain: string): Promise<{
+    subdomain: string
+    available: boolean
+  }> {
+    const response = await this.client.get(`/tenants/check_subdomain/?subdomain=${subdomain}`)
+    return response.data
+  }
+
+  async createTenant(data: {
+    subdomain: string
+    name: string
+    description?: string
+    logo_url?: string
+    primary_color?: string
+  }): Promise<{
+    id: number
+    subdomain: string
+    name: string
+    description?: string
+    logo_url?: string
+    primary_color: string
+    status: string
+    created_at: string
+  }> {
+    const response = await this.client.post('/tenants/', data)
+    return response.data
+  }
+
+  async updateTenant(data: {
+    name?: string
+    description?: string
+    logo_url?: string
+    primary_color?: string
+  }): Promise<{
+    id: number
+    subdomain: string
+    name: string
+    description?: string
+    logo_url?: string
+    primary_color: string
+    status: string
+  }> {
+    // Get my tenant first to get the ID
+    const myTenant = await this.getMyTenant()
+    if (!myTenant) throw new Error('Тенант не найден')
+
+    const response = await this.client.patch(`/tenants/${myTenant.id}/`, data)
     return response.data
   }
 

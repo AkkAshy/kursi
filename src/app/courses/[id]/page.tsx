@@ -113,9 +113,23 @@ export default function PublicCoursePage({ params }: { params: Promise<{ id: str
       <Box bg="white" borderBottom="1px solid" borderColor="#EFE8E0">
         <Box maxW="1200px" mx="auto" px={6} py={12}>
           <Flex gap={10} direction={{ base: 'column', lg: 'row' }}>
-            {/* Course Image / Video */}
+            {/* Course Preview Video / Image */}
             <Box flex={1} maxW={{ lg: '600px' }}>
-              {course.cover_url ? (
+              {course.preview_video_url ? (
+                <Box
+                  borderRadius="20px"
+                  overflow="hidden"
+                  boxShadow="0 8px 32px -8px rgba(0,0,0,0.12)"
+                  bg="black"
+                >
+                  <video
+                    src={course.preview_video_url}
+                    controls
+                    style={{ width: '100%', height: '340px', objectFit: 'contain' }}
+                    poster={course.cover_url}
+                  />
+                </Box>
+              ) : course.cover_url ? (
                 <Image
                   src={course.cover_url}
                   alt={course.title}

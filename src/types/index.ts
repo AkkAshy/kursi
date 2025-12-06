@@ -201,6 +201,23 @@ export interface Lesson {
   updated_at?: string;
 }
 
+// Homework types
+export interface HomeworkSubmission {
+  id: number;
+  student: number;
+  student_name: string;
+  lesson: number;
+  lesson_title: string;
+  text_answer?: string;
+  file_url?: string;
+  status: 'submitted' | 'checked' | 'failed' | 'passed';
+  feedback?: string;
+  checked_by?: number;
+  checked_by_name?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // Lead types
 export interface BotLead {
   id: number;

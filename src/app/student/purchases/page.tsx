@@ -15,7 +15,6 @@ import {
   Button,
 } from '@chakra-ui/react'
 import {
-  FiArrowLeft,
   FiShoppingBag,
   FiClock,
   FiCheck,
@@ -24,6 +23,7 @@ import {
 } from 'react-icons/fi'
 import NextLink from 'next/link'
 import api from '@/lib/api'
+import { useAuthStore } from '@/stores/authStore'
 
 interface Purchase {
   id: number
@@ -40,6 +40,7 @@ export default function StudentPurchasesPage() {
   const [purchases, setPurchases] = useState<Purchase[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [authChecked, setAuthChecked] = useState(false)
+  const { user, fetchUser } = useAuthStore()
 
   // Проверяем авторизацию с задержкой
   useEffect(() => {
@@ -61,6 +62,12 @@ export default function StudentPurchasesPage() {
 
       try {
         setIsLoading(true)
+
+        // Загружаем пользователя в store если ещё не загружен
+        if (!user) {
+          await fetchUser()
+        }
+
         const data = await api.getMyPurchases()
         setPurchases(data)
       } catch (err) {
@@ -73,7 +80,7 @@ export default function StudentPurchasesPage() {
     if (authChecked) {
       fetchPurchases()
     }
-  }, [authChecked])
+  }, [authChecked, user, fetchUser])
 
   const formatPrice = (price: string) => {
     return new Intl.NumberFormat('uz-UZ').format(parseFloat(price)) + ' сум'
@@ -155,7 +162,7 @@ export default function StudentPurchasesPage() {
 
   if (isLoading) {
     return (
-      <Flex minH="100vh" align="center" justify="center" bg="#FAF7F2">
+      <Flex minH="50vh" align="center" justify="center">
         <VStack gap={4}>
           <Spinner size="xl" color="#4C8F6D" />
           <Text color="#6F6F6A">Загрузка покупок...</Text>
@@ -165,44 +172,16 @@ export default function StudentPurchasesPage() {
   }
 
   return (
-    <Box minH="100vh" bg="#FAF7F2">
-      {/* Header */}
-      <Box bg="white" borderBottom="1px solid" borderColor="#EFE8E0" py={4}>
-        <Box maxW="800px" mx="auto" px={6}>
-          <Flex justify="space-between" align="center">
-            <HStack gap={4}>
-              <NextLink href="/student">
-                <Flex
-                  w={10}
-                  h={10}
-                  bg="#FDFBF8"
-                  borderRadius="12px"
-                  align="center"
-                  justify="center"
-                  cursor="pointer"
-                  border="1px solid"
-                  borderColor="#EFE8E0"
-                  transition="all 0.15s"
-                  _hover={{ borderColor: '#4C8F6D', color: '#4C8F6D' }}
-                >
-                  <Icon as={FiArrowLeft} boxSize={5} />
-                </Flex>
-              </NextLink>
-              <Box>
-                <Heading size="md" color="#3E3E3C">
-                  Мои покупки
-                </Heading>
-                <Text fontSize="13px" color="#6F6F6A">
-                  История оплат курсов
-                </Text>
-              </Box>
-            </HStack>
-          </Flex>
+    <Box p={8}>
+      {/* Page Header */}
+      <Box mb={8}>
+          <Heading size="lg" color="#3E3E3C" mb={2}>
+            Мои покупки
+          </Heading>
+          <Text color="#6F6F6A">
+            История оплат курсов
+          </Text>
         </Box>
-      </Box>
-
-      {/* Content */}
-      <Box maxW="800px" mx="auto" px={6} py={8}>
         {purchases.length === 0 ? (
           <Card.Root
             bg="white"
@@ -305,7 +284,6 @@ export default function StudentPurchasesPage() {
             ))}
           </VStack>
         )}
-      </Box>
     </Box>
   )
 }

@@ -27,12 +27,69 @@ function LoginForm() {
   const { login, isLoading, error, clearError } = useAuthStore()
   const [loginValue, setLoginValue] = useState('')
   const [password, setPassword] = useState('')
+  const [isPhoneMode, setIsPhoneMode] = useState(true)
+
+  // Форматирование телефона: +998 XX XXX XX XX
+  const formatPhone = (value: string) => {
+    // Убираем всё кроме цифр
+    let digits = value.replace(/\D/g, '')
+
+    // Если начинается с 998, убираем (добавим +998)
+    if (digits.startsWith('998')) {
+      digits = digits.slice(3)
+    }
+
+    // Ограничиваем 9 цифрами (без кода страны)
+    if (digits.length > 9) {
+      digits = digits.slice(0, 9)
+    }
+
+    // Форматируем: +998 XX XXX XX XX
+    let result = '+998'
+    if (digits.length > 0) result += ' ' + digits.slice(0, 2)
+    if (digits.length > 2) result += ' ' + digits.slice(2, 5)
+    if (digits.length > 5) result += ' ' + digits.slice(5, 7)
+    if (digits.length > 7) result += ' ' + digits.slice(7, 9)
+
+    return result
+  }
+
+  const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+
+    // Если поле пустое или только +998 — очищаем
+    if (value === '' || value === '+' || value === '+9' || value === '+99' || value === '+998' || value === '+998 ') {
+      setIsPhoneMode(true)
+      setLoginValue('')
+      return
+    }
+
+    // Проверяем, это телефон или username/email
+    const isPhone = /^[+\d\s]*$/.test(value) && !value.includes('@')
+
+    if (isPhone) {
+      setIsPhoneMode(true)
+      const formatted = formatPhone(value)
+      // Если после форматирования только +998 — очищаем
+      if (formatted === '+998') {
+        setLoginValue('')
+      } else {
+        setLoginValue(formatted)
+      }
+    } else {
+      // Username или email
+      setIsPhoneMode(false)
+      setLoginValue(value)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     clearError()
     try {
-      await login(loginValue, password)
+      // Убираем пробелы из телефона для отправки (если это телефон)
+      const loginForApi = isPhoneMode ? loginValue.replace(/\s/g, '') : loginValue
+      await login(loginForApi, password)
       // Получаем обновлённого пользователя из store
       const { user } = useAuthStore.getState()
 
@@ -138,9 +195,9 @@ function LoginForm() {
                       />
                       <Input
                         type="text"
-                        placeholder="+998 90 123 45 67"
+                        placeholder="+998 90 123 45 67 или username"
                         value={loginValue}
-                        onChange={(e) => setLoginValue(e.target.value)}
+                        onChange={handleLoginChange}
                         pl={11}
                         bg="#FDFBF8"
                         border="1px solid"
@@ -194,7 +251,7 @@ function LoginForm() {
 
                   <Flex justify="end">
                     <ChakraLink asChild>
-                      <NextLink href="/forgot-password">
+                      <NextLink href="/reset-password">
                         <Text
                           fontSize="13px"
                           color="#4C8F6D"
@@ -218,7 +275,7 @@ function LoginForm() {
                     boxShadow="0 4px 16px -2px rgba(76, 143, 109, 0.3)"
                     transition="all 0.2s ease-out"
                     loading={isLoading}
-                    disabled={isLoading || !loginValue || !password}
+                    disabled={isLoading || !loginValue || (isPhoneMode && loginValue.replace(/\s/g, '').length < 13) || !password}
                     _hover={{
                       bg: '#3F7A5C',
                       transform: 'translateY(-2px)',

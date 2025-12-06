@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { ChakraProvider } from '@chakra-ui/react'
 import { system } from '@/theme'
 import { useAuthStore } from '@/stores/authStore'
+import { Toaster } from '@/components/ui/toaster'
 
 function AuthInitializer({ children }: { children: React.ReactNode }) {
   const { fetchUser, isAuthenticated } = useAuthStore()
@@ -21,6 +22,7 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ChakraProvider value={system}>
+      <Toaster />
       <AuthInitializer>
         {children}
       </AuthInitializer>

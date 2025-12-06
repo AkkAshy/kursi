@@ -11,13 +11,11 @@ import {
 } from '@chakra-ui/react'
 import {
   FiHome,
-  FiBook,
-  FiUsers,
-  FiSettings,
+  FiShoppingBag,
+  FiUser,
   FiLogOut,
-  FiLink,
-  FiCreditCard,
-  FiGlobe,
+  FiClipboard,
+  FiGrid,
 } from 'react-icons/fi'
 import NextLink from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -31,16 +29,14 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: 'Главная', href: '/teacher', icon: FiHome },
-  { label: 'Моя школа', href: '/teacher/school', icon: FiGlobe },
-  { label: 'Мои курсы', href: '/teacher/courses', icon: FiBook },
-  { label: 'Лиды', href: '/teacher/leads', icon: FiUsers },
-  { label: 'Платежи', href: '/teacher/payments', icon: FiCreditCard },
-  { label: 'Бот-ссылка', href: '/teacher/bot-link', icon: FiLink },
-  { label: 'Настройки', href: '/teacher/settings', icon: FiSettings },
+  { label: 'Мои курсы', href: '/student', icon: FiHome },
+  { label: 'Каталог курсов', href: '/courses', icon: FiGrid },
+  { label: 'Домашние задания', href: '/student/homeworks', icon: FiClipboard },
+  { label: 'Мои покупки', href: '/student/purchases', icon: FiShoppingBag },
+  { label: 'Профиль', href: '/student/profile', icon: FiUser },
 ]
 
-export function TeacherSidebar() {
+export function StudentSidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const { user, logout } = useAuthStore()
@@ -57,7 +53,7 @@ export function TeacherSidebar() {
   return (
     <>
     {/* Mobile Navigation */}
-    <MobileNav navItems={navItems} userRole="Преподаватель" />
+    <MobileNav navItems={navItems} userRole="Студент" />
 
     {/* Desktop Sidebar */}
     <Box
@@ -99,7 +95,7 @@ export function TeacherSidebar() {
               {user?.full_name || user?.username || 'Загрузка...'}
             </Text>
             <Text fontSize="xs" color="#6F6F6A">
-              {user?.role === 'creator' ? 'Преподаватель' : 'Пользователь'}
+              Студент
             </Text>
           </Box>
         </HStack>
@@ -109,7 +105,7 @@ export function TeacherSidebar() {
       <VStack gap={1} px={3} flex={1}>
         {navItems.map((item) => {
           const isActive = pathname === item.href ||
-            (item.href !== '/teacher' && pathname?.startsWith(item.href))
+            (item.href !== '/student' && pathname?.startsWith(item.href))
 
           return (
             <NextLink key={item.href} href={item.href} style={{ width: '100%' }}>

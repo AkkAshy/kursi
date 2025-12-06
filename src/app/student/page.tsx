@@ -14,18 +14,15 @@ import {
   Spinner,
   Progress,
   SimpleGrid,
-  Button,
 } from '@chakra-ui/react'
 import {
   FiBook,
   FiPlay,
   FiUser,
-  FiLogOut,
-  FiShoppingBag,
 } from 'react-icons/fi'
 import NextLink from 'next/link'
 import api from '@/lib/api'
-import { User } from '@/types'
+import { useAuthStore } from '@/stores/authStore'
 
 interface StudentCourse {
   id: number
@@ -44,10 +41,10 @@ interface StudentCourse {
 }
 
 export default function StudentDashboard() {
-  const [user, setUser] = useState<User | null>(null)
   const [courses, setCourses] = useState<StudentCourse[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [authChecked, setAuthChecked] = useState(false)
+  const { user, fetchUser } = useAuthStore()
 
   // Проверяем авторизацию с задержкой
   useEffect(() => {
@@ -71,18 +68,12 @@ export default function StudentDashboard() {
       try {
         setIsLoading(true)
 
-        const [userData, coursesData] = await Promise.all([
-          api.getMe(),
-          api.getStudentCourses(),
-        ])
-
-        // Проверяем роль
-        if (userData.role !== 'student') {
-          window.location.href = userData.role === 'creator' ? '/teacher' : '/login'
-          return
+        // Загружаем пользователя в store если ещё не загружен
+        if (!user) {
+          await fetchUser()
         }
 
-        setUser(userData)
+        const coursesData = await api.getStudentCourses()
         setCourses(coursesData)
       } catch (err) {
         console.error('Error fetching data:', err)
@@ -98,16 +89,11 @@ export default function StudentDashboard() {
     if (authChecked) {
       fetchData()
     }
-  }, [authChecked])
-
-  const handleLogout = () => {
-    api.logout()
-    window.location.href = '/login'
-  }
+  }, [authChecked, user, fetchUser])
 
   if (isLoading) {
     return (
-      <Flex minH="100vh" align="center" justify="center" bg="#FAF7F2">
+      <Flex minH="50vh" align="center" justify="center">
         <VStack gap={4}>
           <Spinner size="xl" color="#4C8F6D" />
           <Text color="#6F6F6A">Загрузка...</Text>
@@ -117,63 +103,19 @@ export default function StudentDashboard() {
   }
 
   return (
-    <Box minH="100vh" bg="#FAF7F2">
-      {/* Header */}
-      <Box bg="white" borderBottom="1px solid" borderColor="#EFE8E0" py={4}>
-        <Box maxW="1200px" mx="auto" px={6}>
-          <Flex justify="space-between" align="center">
-            <HStack gap={4}>
-              <Flex
-                w={10}
-                h={10}
-                bg="#4C8F6D"
-                borderRadius="12px"
-                align="center"
-                justify="center"
-              >
-                <Icon as={FiBook} boxSize={5} color="white" />
-              </Flex>
-              <Box>
-                <Heading size="md" color="#3E3E3C">
-                  Мои курсы
-                </Heading>
-                <Text fontSize="13px" color="#6F6F6A">
-                  {user?.username || 'Студент'}
-                </Text>
-              </Box>
-            </HStack>
-
-            <HStack gap={3}>
-              <NextLink href="/student/purchases">
-                <Button
-                  variant="ghost"
-                  color="#6F6F6A"
-                  borderRadius="10px"
-                  fontSize="14px"
-                  _hover={{ bg: '#FDFBF8', color: '#3E3E3C' }}
-                >
-                  <Icon as={FiShoppingBag} mr={2} />
-                  Мои покупки
-                </Button>
-              </NextLink>
-              <Button
-                variant="ghost"
-                color="#6F6F6A"
-                borderRadius="10px"
-                fontSize="14px"
-                onClick={handleLogout}
-                _hover={{ bg: '#FDF6ED', color: '#C98A4A' }}
-              >
-                <Icon as={FiLogOut} mr={2} />
-                Выйти
-              </Button>
-            </HStack>
-          </Flex>
+    <Box p={8}>
+      {/* Page Header */}
+      <Box mb={8}>
+          <Heading size="lg" color="#3E3E3C" mb={2}>
+            Мои курсы
+          </Heading>
+          <Text color="#6F6F6A">
+            {courses.length > 0
+              ? `У вас ${courses.length} ${courses.length === 1 ? 'курс' : courses.length < 5 ? 'курса' : 'курсов'}`
+              : 'Начните обучение прямо сейчас'}
+          </Text>
         </Box>
-      </Box>
 
-      {/* Content */}
-      <Box maxW="1200px" mx="auto" px={6} py={8}>
         {courses.length === 0 ? (
           <Card.Root
             bg="white"
@@ -210,7 +152,6 @@ export default function StudentDashboard() {
             ))}
           </SimpleGrid>
         )}
-      </Box>
     </Box>
   )
 }
