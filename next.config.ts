@@ -6,11 +6,11 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'kursi.erp-imaster.uz',
+        hostname: 'server.kepket.uz',
       },
       {
         protocol: 'https',
-        hostname: '*.kursi.uz',
+        hostname: '*.kepket.uz',
       },
     ],
   },
