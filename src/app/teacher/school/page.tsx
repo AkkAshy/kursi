@@ -27,6 +27,8 @@ import {
 } from 'react-icons/fi'
 import api from '@/lib/api'
 
+const BASE_DOMAIN = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'kursi.uz'
+
 interface TenantData {
   id: number
   subdomain: string
@@ -252,7 +254,7 @@ export default function SchoolSettingsPage() {
                     minH="52px"
                   >
                     <Text fontSize="15px" color="#6F6F6A" fontWeight="500">
-                      .kursi.uz
+                      .{BASE_DOMAIN}
                     </Text>
                   </Flex>
                   <Flex px={3} align="center" minW="40px" justify="center">
@@ -345,7 +347,7 @@ export default function SchoolSettingsPage() {
                     </Text>
                   </HStack>
                   <Text fontSize="15px" color="#3E3E3C" fontWeight="500">
-                    https://{subdomain}.kursi.uz
+                    https://{subdomain}.{BASE_DOMAIN}
                   </Text>
                 </Box>
               )}
@@ -427,11 +429,11 @@ export default function SchoolSettingsPage() {
                 </Text>
               </HStack>
               <Text fontSize="24px" fontWeight="bold" color="white">
-                {tenant.subdomain}.kursi.uz
+                {tenant.subdomain}.{BASE_DOMAIN}
               </Text>
             </Box>
             <a
-              href={`https://${tenant.subdomain}.kursi.uz`}
+              href={`https://${tenant.subdomain}.${BASE_DOMAIN}`}
               target="_blank"
               rel="noopener noreferrer"
             >

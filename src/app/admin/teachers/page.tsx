@@ -27,6 +27,8 @@ import {
 import api from '@/lib/api'
 import { Plan } from '@/types'
 
+const BASE_DOMAIN = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'kursi.uz'
+
 interface TeacherWithSubscription {
   id: number
   subdomain: string
@@ -270,7 +272,7 @@ export default function TeachersPage() {
                       boxSize={3}
                       color="#6F6F6A"
                       cursor="pointer"
-                      onClick={() => window.open(`https://${teacher.subdomain}.kursi.uz`, '_blank')}
+                      onClick={() => window.open(`https://${teacher.subdomain}.${BASE_DOMAIN}`, '_blank')}
                     />
                   </HStack>
                 </Table.Cell>
