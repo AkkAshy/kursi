@@ -201,6 +201,9 @@ export default function TrialPage({ params }: { params: Promise<{ id: string }> 
                       <video
                         src={trial.trial_video_url}
                         controls
+                        controlsList="nodownload noplaybackrate"
+                        disablePictureInPicture
+                        onContextMenu={(e) => e.preventDefault()}
                         style={{
                           width: '100%',
                           maxHeight: '500px',

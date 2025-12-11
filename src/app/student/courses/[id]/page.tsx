@@ -583,6 +583,9 @@ function LessonViewer({
             <video
               src={videoUrl}
               controls
+              controlsList="nodownload noplaybackrate"
+              disablePictureInPicture
+              onContextMenu={(e) => e.preventDefault()}
               style={{
                 position: 'absolute',
                 top: 0,

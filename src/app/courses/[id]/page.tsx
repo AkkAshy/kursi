@@ -125,6 +125,9 @@ export default function PublicCoursePage({ params }: { params: Promise<{ id: str
                   <video
                     src={course.preview_video_url}
                     controls
+                    controlsList="nodownload noplaybackrate"
+                    disablePictureInPicture
+                    onContextMenu={(e) => e.preventDefault()}
                     style={{ width: '100%', height: '340px', objectFit: 'contain' }}
                     poster={course.cover_url}
                   />
