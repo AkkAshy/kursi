@@ -484,6 +484,27 @@ class ApiClient {
     return response.data
   }
 
+  // Получить полный URL для стриминга видео с авторизацией
+  getVideoStreamUrl(lessonId: number): string {
+    const baseUrl = API_BASE_URL.replace('/api', '')
+    const token = this.accessToken
+    // Добавляем токен как query параметр для авторизации
+    return `${baseUrl}/api/lessons/${lessonId}/stream_video/?token=${token}`
+  }
+
+  // Получить полный URL для медиа файла
+  getMediaUrl(relativePath: string): string {
+    if (!relativePath) return ''
+    // Если уже полный URL - возвращаем как есть
+    if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
+      return relativePath
+    }
+    const baseUrl = API_BASE_URL.replace('/api', '')
+    // Убираем дублирование слэша
+    const path = relativePath.startsWith('/') ? relativePath : `/${relativePath}`
+    return `${baseUrl}${path}`
+  }
+
   // ==================== HOMEWORKS ====================
 
   async getMyHomeworks(): Promise<HomeworkSubmission[]> {

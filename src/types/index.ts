@@ -189,6 +189,7 @@ export interface Lesson {
   description?: string;
   text_content?: string;
   video?: string;
+  video_url?: string;  // Protected streaming URL from backend
   preview_video_url?: string;
   full_video_url?: string;
   homework_required: boolean;

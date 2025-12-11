@@ -58,6 +58,8 @@ export default function StudentCoursePage({ params }: { params: Promise<{ id: st
   const [course, setCourse] = useState<CourseData | null>(null)
   const [lessons, setLessons] = useState<Lesson[]>([])
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null)
+  const [selectedLessonFull, setSelectedLessonFull] = useState<Lesson | null>(null)
+  const [isLoadingLesson, setIsLoadingLesson] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [lessonProgress, setLessonProgress] = useState<LessonProgressMap>({})
@@ -126,6 +128,30 @@ export default function StudentCoursePage({ params }: { params: Promise<{ id: st
       fetchData()
     }
   }, [courseId])
+
+  // Загрузка полных данных урока при выборе
+  useEffect(() => {
+    const fetchLessonFull = async () => {
+      if (!selectedLesson) {
+        setSelectedLessonFull(null)
+        return
+      }
+
+      setIsLoadingLesson(true)
+      try {
+        const fullLesson = await api.getLesson(selectedLesson.id)
+        setSelectedLessonFull(fullLesson)
+      } catch (err) {
+        console.error('Error fetching lesson:', err)
+        // Fallback to basic lesson data
+        setSelectedLessonFull(selectedLesson)
+      } finally {
+        setIsLoadingLesson(false)
+      }
+    }
+
+    fetchLessonFull()
+  }, [selectedLesson])
 
   if (isLoading) {
     return (
@@ -254,8 +280,24 @@ export default function StudentCoursePage({ params }: { params: Promise<{ id: st
           {/* Main Content - Lesson Viewer */}
           <Box flex={1}>
             {selectedLesson ? (
+              isLoadingLesson ? (
+                <Card.Root
+                  bg="white"
+                  borderRadius="16px"
+                  boxShadow="0 2px 8px -2px rgba(0,0,0,0.06)"
+                  border="1px solid"
+                  borderColor="#EFE8E0"
+                >
+                  <Card.Body p={12}>
+                    <VStack gap={4}>
+                      <Spinner size="xl" color="#4C8F6D" />
+                      <Text color="#6F6F6A">Загрузка урока...</Text>
+                    </VStack>
+                  </Card.Body>
+                </Card.Root>
+              ) : (
               <LessonViewer
-                lesson={selectedLesson}
+                lesson={selectedLessonFull || selectedLesson}
                 lessons={lessons}
                 isCompleted={lessonProgress[selectedLesson.id] || false}
                 onComplete={(lessonId, progressData) => {
@@ -270,6 +312,7 @@ export default function StudentCoursePage({ params }: { params: Promise<{ id: st
                 }}
                 onNavigate={(lesson) => setSelectedLesson(lesson)}
               />
+              )
             ) : (
               <Card.Root
                 bg="white"
@@ -380,7 +423,26 @@ function LessonViewer({
   onComplete: (lessonId: number, progressData?: { completed_lessons: number; progress_percentage: number }) => void
   onNavigate: (lesson: Lesson) => void
 }) {
-  const videoUrl = lesson.full_video_url || lesson.video
+  // Определяем URL для видео:
+  // 1. Если есть video_url от бекенда (защищённый стриминг) - используем его с токеном
+  // 2. Если есть full_video_url (внешняя ссылка) - используем напрямую
+  // 3. Если есть video (путь к файлу) - формируем URL стриминга с токеном
+  const getVideoUrl = () => {
+    if (lesson.video_url) {
+      // Бекенд вернул защищённый URL, добавляем токен
+      return api.getVideoStreamUrl(lesson.id)
+    }
+    if (lesson.full_video_url) {
+      // Внешняя ссылка на видео
+      return lesson.full_video_url
+    }
+    if (lesson.video || lesson.has_video) {
+      // Есть видео файл, используем стриминг
+      return api.getVideoStreamUrl(lesson.id)
+    }
+    return null
+  }
+  const videoUrl = getVideoUrl()
   const [submissions, setSubmissions] = useState<HomeworkSubmission[]>([])
   const [isLoadingSubmissions, setIsLoadingSubmissions] = useState(false)
   const [showSubmitForm, setShowSubmitForm] = useState(false)
@@ -574,31 +636,35 @@ function LessonViewer({
                   Материалы для скачивания
                 </Heading>
                 <VStack gap={2} align="stretch">
-                  {lesson.materials.map((material) => (
-                    <a
-                      key={material.id}
-                      href={material.file}
-                      target="_blank"
-                      download
-                      style={{ textDecoration: 'none' }}
-                    >
-                      <Flex
-                        p={4}
-                        bg="#FDFBF8"
-                        borderRadius="12px"
-                        align="center"
-                        gap={3}
-                        _hover={{ bg: '#E8F5EE' }}
-                        transition="all 0.15s"
-                        cursor="pointer"
+                  {lesson.materials.map((material) => {
+                    const fileUrl = api.getMediaUrl(material.file)
+                    return (
+                      <a
+                        key={material.id}
+                        href={fileUrl}
+                        target="_blank"
+                        download
+                        rel="noopener noreferrer"
+                        style={{ textDecoration: 'none' }}
                       >
-                        <Icon as={FiDownload} boxSize={5} color="#4C8F6D" />
-                        <Text fontSize="14px" color="#3E3E3C" flex={1}>
-                          {material.title}
-                        </Text>
-                      </Flex>
-                    </a>
-                  ))}
+                        <Flex
+                          p={4}
+                          bg="#FDFBF8"
+                          borderRadius="12px"
+                          align="center"
+                          gap={3}
+                          _hover={{ bg: '#E8F5EE' }}
+                          transition="all 0.15s"
+                          cursor="pointer"
+                        >
+                          <Icon as={FiDownload} boxSize={5} color="#4C8F6D" />
+                          <Text fontSize="14px" color="#3E3E3C" flex={1}>
+                            {material.title}
+                          </Text>
+                        </Flex>
+                      </a>
+                    )
+                  })}
                 </VStack>
               </Box>
             )}
